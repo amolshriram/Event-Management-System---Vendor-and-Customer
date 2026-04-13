@@ -1,0 +1,8 @@
+/* Light tweaks on top of Bootstrap for Event Vendor Platform */
+.card-img-top {
+  object-fit: cover;
+}
+
+.navbar .btn-link.nav-link:hover {
+  opacity: 0.9;
+}

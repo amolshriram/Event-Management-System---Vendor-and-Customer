@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vendor.display_name }} — Event Vendor Platform{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ vendor.display_name }}</h1>
+    <p class="text-muted mb-0">
+      {{ vendor.category_label }}
+      {% if vendor.location %} · {{ vendor.location }}{% endif %}
+    </p>
+    {% if review_count %}
+      <p class="mt-2 mb-0">
+        <span class="badge text-bg-warning">{{ avg_rating|floatformat:1 }} ★</span>
+        <span class="small text-muted">({{ review_count }} review{{ review_count|pluralize }})</span>
+      </p>
+    {% endif %}
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if vendor.phone %}
+      <a class="btn btn-success" href="tel:{{ vendor.phone }}">Call Now</a>
+    {% else %}
+      <span class="btn btn-secondary disabled">Phone not set</span>
+    {% endif %}
+    {% if user.is_authenticated and user.is_customer %}
+      <form method="post" action="{% url 'vendors:toggle_favorite' vendor.pk %}" class="d-inline">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="btn btn-outline-primary">
+          {% if is_favorite %}★ Favorited{% else %}☆ Add to favorites{% endif %}
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if vendor.description %}
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h2 class="h6 text-uppercase text-muted">About</h2>
+      <p class="mb-0">{{ vendor.description|linebreaks }}</p>
+    </div>
+  </div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <h2 class="h5 mb-3">Image gallery</h2>
+    {% if images %}
+      <div class="row g-2">
+        {% for img in images %}
+          <div class="col-6 col-md-4">
+            <a href="{{ img.file.url }}" target="_blank" rel="noopener">
+              <img src="{{ img.file.url }}" class="img-fluid rounded border" alt="Gallery image">
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No images uploaded yet.</p>
+    {% endif %}
+  </div>
+  <div class="col-lg-5">
+    <h2 class="h5 mb-3">Videos</h2>
+    {% if videos %}
+      {% for vid in videos %}
+        <div class="mb-3">
+          <video class="w-100 rounded border" controls preload="metadata" style="max-height: 280px;">
+            <source src="{{ vid.file.url }}">
+            Your browser does not support video.
+          </video>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">No videos uploaded yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<hr class="my-5">
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <h2 class="h5 mb-3">Reviews</h2>
+    {% if reviews %}
+      <ul class="list-group list-group-flush">
+        {% for r in reviews %}
+          <li class="list-group-item px-0">
+            <div class="d-flex justify-content-between">
+              <strong>{{ r.customer.username }}</strong>
+              <span class="badge text-bg-warning">{{ r.rating }} ★</span>
+            </div>
+            {% if r.text %}<p class="small mb-0 mt-1">{{ r.text }}</p>{% endif %}
+            <div class="small text-muted">{{ r.created_at|date:"M j, Y" }}</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">No reviews yet.</p>
+    {% endif %}
+  </div>
+  <div class="col-lg-6">
+    {% if user.is_authenticated and user.is_customer and can_review and review_form %}
+      <h2 class="h5 mb-3">Write a review</h2>
+      <form method="post" class="card card-body shadow-sm">
+        {% csrf_token %}
+        <input type="hidden" name="submit_review" value="1">
+        <div class="mb-2">
+          <label class="form-label" for="id_rating">Rating (1–5)</label>
+          {{ review_form.rating }}
+          {% if review_form.rating.errors %}<div class="text-danger small">{{ review_form.rating.errors }}</div>{% endif %}
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="id_text">Comment (optional)</label>
+          {{ review_form.text }}
+        </div>
+        <button type="submit" class="btn btn-primary">Submit review</button>
+      </form>
+    {% elif user.is_authenticated and user.is_customer and not can_review %}
+      <p class="text-muted small">You have already reviewed this vendor.</p>
+    {% elif not user.is_authenticated %}
+      <p class="text-muted small"><a href="{% url 'login' %}">Login</a> as a customer to leave a review or save favorites.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
