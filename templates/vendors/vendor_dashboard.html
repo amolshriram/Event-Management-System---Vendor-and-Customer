@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Vendor dashboard — Event Vendor Platform{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Vendor dashboard</h1>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Profile</div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="save_profile" value="1">
+          {% for field in profile_form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+              {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary">Save profile</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Upload media</div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="upload_media" value="1">
+          <div class="mb-3">
+            <label class="form-label" for="id_images">Images</label>
+            {{ media_form.images }}
+            {% if media_form.images.errors %}<div class="text-danger small">{{ media_form.images.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="id_videos">Videos</label>
+            {{ media_form.videos }}
+            {% if media_form.videos.errors %}<div class="text-danger small">{{ media_form.videos.errors }}</div>{% endif %}
+          </div>
+          {% if media_form.non_field_errors %}
+            <div class="alert alert-danger">{{ media_form.non_field_errors }}</div>
+          {% endif %}
+          <button type="submit" class="btn btn-outline-primary">Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-header bg-white fw-semibold">Your uploads</div>
+  <div class="card-body">
+    {% if media_list %}
+      <div class="row g-3">
+        {% for m in media_list %}
+          <div class="col-md-4 col-sm-6">
+            <div class="border rounded overflow-hidden bg-white h-100">
+              {% if m.media_type == 'image' %}
+                <a href="{{ m.file.url }}" target="_blank" rel="noopener">
+                  <img src="{{ m.file.url }}" class="w-100 object-fit-cover" style="max-height: 180px;" alt="Vendor image">
+                </a>
+              {% else %}
+                <video class="w-100" controls preload="metadata" style="max-height: 220px;">
+                  <source src="{{ m.file.url }}">
+                  Your browser does not support video.
+                </video>
+              {% endif %}
+              <div class="p-2 d-flex justify-content-between align-items-center">
+                <span class="badge text-bg-secondary">{{ m.get_media_type_display }}</span>
+                <form method="post" action="{% url 'vendors:delete_media' m.pk %}" class="m-0"
+                      onsubmit="return confirm('Delete this file?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No media yet. Upload images or videos using the form above.</p>
+    {% endif %}
+  </div>
+</div>
+
+<p class="mt-3 small text-muted mb-0">
+  <a href="{{ profile.get_absolute_url }}">View your public profile</a>
+</p>
+{% endblock %}

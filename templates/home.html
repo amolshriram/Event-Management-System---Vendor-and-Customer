@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Home — Event Vendor Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8 text-center py-5">
+    <h1 class="display-5 fw-bold text-primary mb-3">Plan events with trusted vendors</h1>
+    <p class="lead text-secondary mb-4">
+      Event Vendor Platform helps customers discover photographers, caterers, decorators, and more.
+      Vendors showcase photos and videos of their work; customers search by category and location,
+      then call vendors directly — no booking middleman.
+    </p>
+    {% if user.is_authenticated %}
+      <p class="text-secondary mb-3">
+        You are signed in as <strong>{{ user.username }}</strong>
+        ({{ user.get_role_display }}).
+        Use <strong>Logout</strong> in the navigation bar if you want to register a new account or sign in as someone else.
+      </p>
+      <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <a class="btn btn-primary btn-lg px-4" href="{% url 'dashboard_redirect' %}">Go to dashboard</a>
+        <form action="{% url 'logout' %}" method="post" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-secondary btn-lg px-4">Logout</button>
+        </form>
+      </div>
+    {% else %}
+      <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <a class="btn btn-primary btn-lg px-4" href="{% url 'login' %}">Login</a>
+        <a class="btn btn-outline-primary btn-lg px-4" href="{% url 'register' %}">Register</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{# Always visible: static demo profiles (no database) #}
+<section class="py-5 border-top bg-white rounded-3 shadow-sm px-3 px-md-4 mb-4" aria-labelledby="static-demo-heading">
+  <div class="text-center mb-4">
+    <span class="badge text-bg-secondary mb-2">Static demo</span>
+    <h2 id="static-demo-heading" class="h4 fw-semibold text-primary mb-2">Sample vendor profiles</h2>
+    <p class="text-muted small mb-0 mx-auto" style="max-width: 40rem;">
+      Illustrative cards only — they show how listings look on the platform. Register as a vendor to create a real profile.
+    </p>
+  </div>
+  {% include "partials/static_demo_vendors.html" %}
+</section>
+{% endblock %}
