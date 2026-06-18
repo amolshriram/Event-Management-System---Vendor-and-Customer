@@ -2,6 +2,12 @@
 Django settings for the Event Vendor Platform project.
 """
 
+import os
+import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from pathlib import Path
 
 from django.contrib.messages import constants as msg_const
@@ -72,10 +78,9 @@ TEMPLATES = [
 WSGI_APPLICATION = "event_platform.wsgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': dj_database_url.parse(
+        os.environ.get('DATABASE_URL')
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
